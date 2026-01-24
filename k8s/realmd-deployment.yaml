@@ -1,0 +1,96 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realmd
+  namespace: mangos
+  labels:
+    app: realmd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: realmd
+  template:
+    metadata:
+      labels:
+        app: realmd
+    spec:
+      initContainers:
+      # Wait for MySQL to be ready
+      - name: wait-for-mysql
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z mysql-service 3306; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+          echo "MySQL is ready!"
+      containers:
+      - name: realmd
+        image: mangos-wotlk:realmd
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3724
+          name: realmd
+          protocol: TCP
+        env:
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: mangos-config
+              key: TZ
+        volumeMounts:
+        - name: config
+          mountPath: /mangos/etc/realmd.conf
+          subPath: realmd.conf
+        - name: logs
+          mountPath: /mangos/logs
+        livenessProbe:
+          tcpSocket:
+            port: 3724
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 3724
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: config
+        configMap:
+          name: realmd-config
+      - name: logs
+        persistentVolumeClaim:
+          claimName: realmd-logs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: realmd-service
+  namespace: mangos
+  labels:
+    app: realmd
+spec:
+  type: LoadBalancer  # For K3s, this will use the built-in load balancer
+  ports:
+  - port: 3724
+    targetPort: 3724
+    protocol: TCP
+    name: realmd
+  selector:
+    app: realmd

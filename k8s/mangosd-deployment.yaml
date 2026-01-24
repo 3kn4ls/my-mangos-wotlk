@@ -1,0 +1,152 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mangosd
+  namespace: mangos
+  labels:
+    app: mangosd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mangosd
+  template:
+    metadata:
+      labels:
+        app: mangosd
+    spec:
+      initContainers:
+      # Wait for MySQL to be ready
+      - name: wait-for-mysql
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z mysql-service 3306; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+          echo "MySQL is ready!"
+      # Wait for realmd to be ready
+      - name: wait-for-realmd
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z realmd-service 3724; do
+            echo "Waiting for Realmd..."
+            sleep 2
+          done
+          echo "Realmd is ready!"
+      containers:
+      - name: mangosd
+        image: mangos-wotlk:mangosd
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8085
+          name: world
+          protocol: TCP
+        - containerPort: 7878
+          name: soap
+          protocol: TCP
+        env:
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: mangos-config
+              key: TZ
+        - name: REALM_ID
+          valueFrom:
+            configMapKeyRef:
+              name: mangos-config
+              key: REALM_ID
+        volumeMounts:
+        - name: mangosd-config
+          mountPath: /mangos/etc/mangosd.conf
+          subPath: mangosd.conf
+        - name: ahbot-config
+          mountPath: /mangos/etc/ahbot.conf
+          subPath: ahbot.conf
+        - name: playerbot-config
+          mountPath: /mangos/etc/playerbot.conf
+          subPath: playerbot.conf
+        - name: logs
+          mountPath: /mangos/logs
+        - name: game-data-dbc
+          mountPath: /mangos/dbc
+        - name: game-data-maps
+          mountPath: /mangos/maps
+        - name: game-data-mmaps
+          mountPath: /mangos/mmaps
+        - name: game-data-vmaps
+          mountPath: /mangos/vmaps
+        livenessProbe:
+          tcpSocket:
+            port: 8085
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
+          tcpSocket:
+            port: 8085
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+      volumes:
+      - name: mangosd-config
+        configMap:
+          name: mangosd-config
+      - name: ahbot-config
+        configMap:
+          name: mangosd-config
+      - name: playerbot-config
+        configMap:
+          name: mangosd-config
+      - name: logs
+        persistentVolumeClaim:
+          claimName: mangosd-logs-pvc
+      - name: game-data-dbc
+        persistentVolumeClaim:
+          claimName: game-data-dbc-pvc
+      - name: game-data-maps
+        persistentVolumeClaim:
+          claimName: game-data-maps-pvc
+      - name: game-data-mmaps
+        persistentVolumeClaim:
+          claimName: game-data-mmaps-pvc
+      - name: game-data-vmaps
+        persistentVolumeClaim:
+          claimName: game-data-vmaps-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mangosd-service
+  namespace: mangos
+  labels:
+    app: mangosd
+spec:
+  type: LoadBalancer  # For K3s, this will use the built-in load balancer
+  ports:
+  - port: 8085
+    targetPort: 8085
+    protocol: TCP
+    name: world
+  - port: 7878
+    targetPort: 7878
+    protocol: TCP
+    name: soap
+  selector:
+    app: mangosd

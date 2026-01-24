@@ -1,0 +1,106 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mangos-config
+  namespace: mangos
+data:
+  TZ: "UTC"
+  REALM_ID: "1"
+  MYSQL_PORT: "3306"
+  REALMD_PORT: "3724"
+  MANGOSD_PORT: "8085"
+  SOAP_PORT: "7878"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: realmd-config
+  namespace: mangos
+data:
+  realmd.conf: |
+    [RealmdConf]
+    ConfVersion=2021031501
+
+    LoginDatabaseInfo = "mysql-service;3306;mangos;mangos;realmd"
+    LogsDir = "/mangos/logs"
+    MaxPingTime = 30
+    RealmServerPort = 3724
+    BindIP = "0.0.0.0"
+    ListenerThreads = 1
+    PidFile = ""
+    LogLevel = 2
+    LogTime = 1
+    LogFile = "Realmd.log"
+    LogTimestamp = 0
+    LogFileLevel = 2
+    LogColors = ""
+    UseProcessors = 0
+    ProcessPriority = 1
+    WaitAtStartupError = 0
+    WrongPass.MaxCount = 3
+    WrongPass.BanTime = 600
+    WrongPass.BanType = 0
+    WrongPass.Logging = 0
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mangosd-config
+  namespace: mangos
+data:
+  mangosd.conf: |
+    [MangosdConf]
+    ConfVersion=2024020101
+
+    RealmID = 1
+    DataDir = "/mangos/data"
+    LogsDir = "/mangos/logs"
+    LoginDatabaseInfo     = "mysql-service;3306;mangos;mangos;realmd"
+    WorldDatabaseInfo     = "mysql-service;3306;mangos;mangos;mangos"
+    CharacterDatabaseInfo = "mysql-service;3306;mangos;mangos;characters"
+    LogsDatabaseInfo      = "mysql-service;3306;mangos;mangos;mangos"
+    LoginDatabaseConnections = 1
+    WorldDatabaseConnections = 2
+    CharacterDatabaseConnections = 1
+    LogsDatabaseConnections = 1
+    MaxPingTime = 30
+    WorldServerPort = 8085
+    BindIP = "0.0.0.0"
+    SD2ErrorLogFile = "SD2Errors.log"
+    Compression = 1
+    PlayerLimit = 100
+    SaveRespawnTimeImmediately = 1
+    MaxOverspeedPings = 2
+    GridUnload = 1
+    MapUpdateInterval = 100
+    LogLevel = 2
+    LogTime = 1
+    LogFile = "Server.log"
+    LogTimestamp = 0
+    LogFileLevel = 2
+    LogColors = ""
+    PidFile = ""
+    Rate.Health = 1
+    Rate.Mana = 1
+    Rate.XP.Kill = 1
+    Rate.XP.Quest = 1
+    Expansion = 2
+    Motd = "Welcome to MaNGOS WotLK on Kubernetes!"
+    SOAP.Enabled = 0
+    SOAP.IP = "0.0.0.0"
+    SOAP.Port = 7878
+
+  ahbot.conf: |
+    [AhbotConf]
+    ConfVersion=2010110201
+    AuctionHouseBot.Enabled = 0
+    AuctionHouseBot.EnableAllianceBot = 0
+    AuctionHouseBot.EnableHordeBot = 0
+    AuctionHouseBot.EnableNeutralBot = 0
+
+  playerbot.conf: |
+    [PlayerbotConf]
+    ConfVersion=2023010101
+    AiPlayerbot.Enabled = 0
+    AiPlayerbot.AllowPlayerBots = 1

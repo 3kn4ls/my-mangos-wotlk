@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mangos
+  labels:
+    name: mangos
+    app: mangos-wotlk
