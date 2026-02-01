@@ -1,0 +1,176 @@
+version: '3.8'
+
+# MaNGOS WotLK - Docker Compose Configuration for Windows
+# Optimized for Docker Desktop on Windows
+# Services: MySQL, Realmd (Auth Server), Mangosd (World Server)
+
+services:
+  # MySQL Database Server
+  database:
+    image: mysql:8.0
+    container_name: mangos-database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mangos}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mangos}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/base:/docker-entrypoint-initdb.d/base:ro
+      - ./sql/updates:/docker-entrypoint-initdb.d/updates:ro
+      - ./docker/init-databases.sh:/docker-entrypoint-initdb.d/00-init-databases.sh:ro
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    networks:
+      - mangos-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-mangos}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max_allowed_packet=256M
+
+  # Realmd - Authentication Server
+  realmd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: realmd
+      args:
+        BASE_IMAGE: ubuntu:22.04
+    image: mangos-wotlk:realmd
+    container_name: mangos-realmd
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ:-UTC}
+      REALMD_LOGINDB_HOST: database
+      REALMD_LOGINDB_PORT: 3306
+      REALMD_LOGINDB_USER: ${MYSQL_USER:-mangos}
+      REALMD_LOGINDB_PASSWORD: ${MYSQL_PASSWORD:-mangos}
+      REALMD_LOGINDB_DATABASE: ${REALMD_DB:-realmd}
+    volumes:
+      # Windows path format - use forward slashes
+      - ./docker/configs/realmd.conf:/mangos/etc/realmd.conf:ro
+      - realmd_logs:/mangos/logs
+    ports:
+      - "${REALMD_PORT:-3724}:3724"
+    networks:
+      - mangos-network
+    # Windows-compatible healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "ss -tln | grep 3724 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Mangosd - World/Game Server
+  mangosd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mangosd
+      args:
+        BASE_IMAGE: ubuntu:22.04
+    image: mangos-wotlk:mangosd
+    container_name: mangos-mangosd
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+      realmd:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ:-UTC}
+      # Database connection settings
+      MANGOSD_LOGINDB_HOST: database
+      MANGOSD_LOGINDB_PORT: 3306
+      MANGOSD_LOGINDB_USER: ${MYSQL_USER:-mangos}
+      MANGOSD_LOGINDB_PASSWORD: ${MYSQL_PASSWORD:-mangos}
+      MANGOSD_LOGINDB_DATABASE: ${REALMD_DB:-realmd}
+
+      MANGOSD_WORLDDB_HOST: database
+      MANGOSD_WORLDDB_PORT: 3306
+      MANGOSD_WORLDDB_USER: ${MYSQL_USER:-mangos}
+      MANGOSD_WORLDDB_PASSWORD: ${MYSQL_PASSWORD:-mangos}
+      MANGOSD_WORLDDB_DATABASE: ${WORLD_DB:-mangos}
+
+      MANGOSD_CHARACTERDB_HOST: database
+      MANGOSD_CHARACTERDB_PORT: 3306
+      MANGOSD_CHARACTERDB_USER: ${MYSQL_USER:-mangos}
+      MANGOSD_CHARACTERDB_PASSWORD: ${MYSQL_PASSWORD:-mangos}
+      MANGOSD_CHARACTERDB_DATABASE: ${CHARACTER_DB:-characters}
+
+      MANGOSD_REALM_ID: ${REALM_ID:-1}
+      MANGOSD_DATA_DIR: /mangos/data
+    volumes:
+      # Windows paths - Docker Desktop handles path conversion
+      - ./docker/configs/mangosd.conf:/mangos/etc/mangosd.conf:ro
+      - ./docker/configs/ahbot.conf:/mangos/etc/ahbot.conf:ro
+      - ./docker/configs/playerbot.conf:/mangos/etc/playerbot.conf:ro
+      - mangosd_logs:/mangos/logs
+      # Game data - can be mounted from Windows host
+      - game_data_dbc:/mangos/dbc:ro
+      - game_data_maps:/mangos/maps:ro
+      - game_data_mmaps:/mangos/mmaps:ro
+      - game_data_vmaps:/mangos/vmaps:ro
+    ports:
+      - "${MANGOSD_PORT:-8085}:8085"
+      - "${SOAP_PORT:-7878}:7878"
+    networks:
+      - mangos-network
+    # Windows-compatible healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "ss -tln | grep 8085 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # phpMyAdmin - Database Management (optional)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: mangos-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - database
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mangos}
+      UPLOAD_LIMIT: 256M
+    ports:
+      - "${PHPMYADMIN_PORT:-8080}:80"
+    networks:
+      - mangos-network
+    profiles:
+      - tools
+
+networks:
+  mangos-network:
+    driver: bridge
+
+volumes:
+  # Named volumes work better on Windows than bind mounts for databases
+  mysql_data:
+    driver: local
+  realmd_logs:
+    driver: local
+  mangosd_logs:
+    driver: local
+  game_data_dbc:
+    driver: local
+  game_data_maps:
+    driver: local
+  game_data_mmaps:
+    driver: local
+  game_data_vmaps:
+    driver: local

@@ -1,0 +1,98 @@
+---
+# MySQL Data PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-data-pvc
+  namespace: mangos
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-path  # K3s default storage class
+---
+# Realmd Logs PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: realmd-logs-pvc
+  namespace: mangos
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
+---
+# Mangosd Logs PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mangosd-logs-pvc
+  namespace: mangos
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-path
+---
+# Game Data DBC PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: game-data-dbc-pvc
+  namespace: mangos
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: local-path
+---
+# Game Data Maps PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: game-data-maps-pvc
+  namespace: mangos
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-path
+---
+# Game Data MMaps PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: game-data-mmaps-pvc
+  namespace: mangos
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-path
+---
+# Game Data VMaps PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: game-data-vmaps-pvc
+  namespace: mangos
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-path
