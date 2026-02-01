@@ -4,9 +4,17 @@ Welcome to the MaNGOS WotLK documentation. This directory contains comprehensive
 
 ## Quick Start
 
-New to MaNGOS? Start here:
+New to MaNGOS? Choose your platform and follow the step-by-step guide:
 
-1. **[Deployment Guide](../DEPLOYMENT.md)** - Quick start for Docker and K3s deployment
+### 🚀 Platform-Specific Quick Start Guides
+
+- **[Windows 11](QUICKSTART_WINDOWS.md)** - Complete guide for Docker on Windows 11 with WSL2
+- **[Raspberry Pi 5](QUICKSTART_RASPBERRY_PI.md)** - Optimized guide for ARM64 deployment on Raspberry Pi 5
+- **[K3s (Kubernetes)](QUICKSTART_K3S.md)** - Production-ready Kubernetes cluster deployment
+
+### 📚 General Documentation
+
+1. **[Deployment Guide](../DEPLOYMENT.md)** - Overview of all deployment options
 2. **[Architecture Overview](ARCHITECTURE.md)** - Understand the system architecture
 3. **[Docker Deployment](DOCKER_DEPLOYMENT.md)** or **[K8s Deployment](K8S_DEPLOYMENT.md)** - Detailed deployment guides
 
@@ -44,6 +52,66 @@ Detailed reference for all 45+ game modules.
 - Module dependencies and performance notes
 
 **Audience**: Developers, contributors, AI code assistants
+
+---
+
+### Quick Start Guides
+
+#### [QUICKSTART_WINDOWS.md](QUICKSTART_WINDOWS.md)
+Step-by-step guide for Windows 11 deployment.
+
+**Contents**:
+- Prerequisites (WSL2, Docker Desktop)
+- Environment configuration
+- Building multi-architecture images
+- Deploying with Docker Compose
+- Database setup and game data extraction
+- Creating GM accounts
+- Troubleshooting Windows-specific issues
+
+**Audience**: Windows users, beginners
+
+**Time to deploy**: ~1-2 hours (including build time)
+
+---
+
+#### [QUICKSTART_RASPBERRY_PI.md](QUICKSTART_RASPBERRY_PI.md)
+Optimized guide for Raspberry Pi 5 (ARM64).
+
+**Contents**:
+- Hardware requirements and recommendations
+- Raspberry Pi OS setup
+- Docker installation for ARM64
+- Performance optimization for limited resources
+- Temperature monitoring and thermal management
+- SSD/NVMe configuration
+- Resource limits and player capacity
+
+**Audience**: Raspberry Pi users, ARM64 platforms
+
+**Time to deploy**: ~2-3 hours (ARM64 builds are slower)
+
+**Expected capacity**: 10-50 concurrent players
+
+---
+
+#### [QUICKSTART_K3S.md](QUICKSTART_K3S.md)
+Production-ready Kubernetes (K3s) deployment.
+
+**Contents**:
+- K3s installation (single-node and multi-node)
+- Kubernetes manifests explanation
+- Automated deployment scripts
+- Scaling strategies
+- High availability setup
+- Monitoring with Prometheus/Grafana
+- Backup and disaster recovery
+
+**Audience**: DevOps engineers, production deployments
+
+**Time to deploy**: ~1-2 hours
+
+**Best for**: Production servers, high availability, scalability
 
 ---
 
