@@ -48,6 +48,96 @@ To be able to accomplish these goals, we support and promote:
 
 -- The C(ontinued)-MaNGOS Team!
 
+---
+
+## 🚀 Quick Start - Docker & Kubernetes Deployment
+
+This repository now includes **production-ready containerized deployment** options with comprehensive documentation:
+
+### Choose Your Platform
+
+#### 🪟 [Windows 11](docs/QUICKSTART_WINDOWS.md)
+Complete step-by-step guide for Docker Desktop on Windows with WSL2
+- **Time to deploy**: 1-2 hours
+- **Best for**: Development, testing, personal servers
+- **Difficulty**: Beginner-friendly
+
+#### 🥧 [Raspberry Pi 5](docs/QUICKSTART_RASPBERRY_PI.md)
+Optimized deployment for ARM64 (Raspberry Pi 5, 8GB recommended)
+- **Time to deploy**: 2-3 hours (ARM builds are slower)
+- **Capacity**: 10-50 concurrent players
+- **Best for**: Home servers, low-power deployments
+- **Difficulty**: Intermediate
+
+#### ☸️ [K3s (Kubernetes)](docs/QUICKSTART_K3S.md)
+Production-ready Kubernetes cluster deployment
+- **Time to deploy**: 1-2 hours
+- **Best for**: Production, high availability, scalability
+- **Features**: Auto-scaling, self-healing, load balancing
+- **Difficulty**: Advanced
+
+### 📦 What's Included
+
+✅ **Multi-architecture Docker images** (AMD64, ARM64)
+✅ **Docker Compose** for Linux, Windows, Raspberry Pi
+✅ **Kubernetes/K3s** manifests with automated deployment
+✅ **Persistent storage** configuration
+✅ **Health checks** and auto-restart
+✅ **Comprehensive documentation** (56KB+ of guides)
+
+### 📚 Documentation
+
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Overview of all deployment options
+- **[docs/](docs/)** - Complete documentation index
+  - [Architecture](docs/ARCHITECTURE.md) - System architecture overview
+  - [Modules](docs/MODULES.md) - Detailed module reference (45+ modules)
+  - [Docker Guide](docs/DOCKER_DEPLOYMENT.md) - Advanced Docker deployment
+  - [K8s Guide](docs/K8S_DEPLOYMENT.md) - Kubernetes deployment details
+
+### ⚡ Quick Deploy (Example)
+
+**Docker on Linux/Raspberry Pi:**
+```bash
+# Configure environment
+cp .env.example .env
+nano .env  # Edit passwords and settings
+
+# Build and deploy
+cd docker
+./build.sh
+./deploy.sh up
+```
+
+**K3s Cluster:**
+```bash
+# Install K3s
+curl -sfL https://get.k3s.io | sh -
+
+# Deploy MaNGOS
+cd k8s
+./deploy-k3s.sh deploy
+```
+
+**Docker on Windows:**
+```powershell
+# Configure environment
+Copy-Item .env.example .env
+notepad .env  # Edit passwords and settings
+
+# Build and deploy
+cd docker
+.\build.ps1
+.\deploy.ps1 up
+```
+
+### 🎯 Traditional Installation
+
+For traditional build-from-source installation, see:
+- [Installation Wiki](https://github.com/cmangos/issues/wiki)
+- [Contributing Guidelines](CONTRIBUTING.md)
+
+---
+
 ## Further information
 
   You can find further information about CMaNGOS at the following places:
