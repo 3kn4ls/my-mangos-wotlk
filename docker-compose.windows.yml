@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
       target: realmd
       args:
-        BASE_IMAGE: ubuntu:22.04
+        BASE_IMAGE: ubuntu:24.04
     image: mangos-wotlk:realmd
     container_name: mangos-realmd
     restart: unless-stopped
@@ -78,7 +78,7 @@ services:
       dockerfile: Dockerfile
       target: mangosd
       args:
-        BASE_IMAGE: ubuntu:22.04
+        BASE_IMAGE: ubuntu:24.04
     image: mangos-wotlk:mangosd
     container_name: mangos-mangosd
     restart: unless-stopped
